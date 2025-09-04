@@ -11,7 +11,7 @@ CORS(app)
 
 SSH_HOST = os.getenv('HOST_IP', "linfed.ru")
 SSH_USER = 'cs'
-SSH_KEY_PATH = 'C:/Users/SAN43Z/.ssh/id_ed25519'
+SSH_KEY_PATH = './ssh_key'
 
 
 
