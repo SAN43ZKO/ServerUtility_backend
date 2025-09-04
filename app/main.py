@@ -15,7 +15,7 @@ SSH_KEY_PATH = 'C:/Users/SAN43Z/.ssh/id_ed25519'
 
 
 
-@app.route('/server-start', methods=['POST'])
+@app.route('/api/server-start', methods=['POST'])
 def start_server():
     try:
         data = request.get_json()
@@ -41,7 +41,7 @@ def start_server():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/server-stop', methods=['POST'])
+@app.route('/api/server-stop', methods=['POST'])
 def stop_server():
     try:
         data = request.get_json()
@@ -67,7 +67,7 @@ def stop_server():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/say', methods=['POST'])
+@app.route('/api/say', methods=['POST'])
 def say_mod():
     try:
         ssh = paramiko.SSHClient()
@@ -83,7 +83,7 @@ def say_mod():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/status', methods=['POST'])
+@app.route('/api/status', methods=['POST'])
 async def check_status():
     try:
         data = request.get_json()
