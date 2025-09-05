@@ -1,10 +1,13 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from io import StringIO
+from dotenv import load_dotenv
+import io
 import paramiko
 import os
 import re
 import a2s
+
+load_dotenv()
 
 app=Flask(__name__)
 app.debug = True
@@ -12,10 +15,12 @@ CORS(app)
 
 SSH_HOST = os.getenv('HOST_IP', "linfed.ru")
 SSH_USER = 'cs'
-SSH_PRIVATE_KEY = os.getenv('SSH_KEY')
-PRIVATE_KEY = StringIO(SSH_PRIVATE_KEY)
-PK = paramiko.Ed25519Key.from_private_key(PRIVATE_KEY)
-
+SSH_PRIVATE_KEY = os.getenv("SSH_KEY")
+if SSH_PRIVATE_KEY is not None:
+    with open("ssh_key", "w") as file:
+        file.write(SSH_PRIVATE_KEY)
+else:
+    print("No ssh_key")
 
 
 
@@ -31,7 +36,7 @@ def start_server():
 
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(SSH_HOST, username=SSH_USER, pkey=PK)
+        ssh.connect(SSH_HOST, username=SSH_USER, key_filename="ssh_key")
 
         stdin, stdout, stderr = ssh.exec_command(f'cs2-server @prac{server_id} start')
         output = stdout.read().decode()
@@ -57,7 +62,7 @@ def stop_server():
 
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(SSH_HOST, username=SSH_USER, pkey=SSH_PRIVATE_KEY)
+        ssh.connect(SSH_HOST, username=SSH_USER, key_filename="ssh_key")
 
         stdin, stdout, stderr = ssh.exec_command(f"cs2-server @prac{server_id} stop")
         output = stdout.read().decode()
@@ -79,7 +84,7 @@ def say_mod():
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(SSH_HOST, username=SSH_USER, pkey=SSH_PRIVATE_KEY)
+        ssh.connect(SSH_HOST, username=SSH_USER, key_filename="ssh_key")
 
         stdin, stdout, stderr = ssh.exec_command('cs2-server @prac3 exec say WORK!!!')
         output = stdout.read().decode()
