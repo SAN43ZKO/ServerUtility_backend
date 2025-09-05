@@ -17,8 +17,9 @@ SSH_HOST = os.getenv('HOST_IP', "linfed.ru")
 SSH_USER = 'cs'
 SSH_PRIVATE_KEY = os.getenv("SSH_KEY")
 if SSH_PRIVATE_KEY is not None:
+    key = SSH_PRIVATE_KEY.encode().decode("unicode_escape")
     with open("ssh_key", "w") as file:
-        file.write(SSH_PRIVATE_KEY)
+        file.write(key)
 else:
     print("No ssh_key")
 
