@@ -11,7 +11,7 @@ CORS(app)
 
 SSH_HOST = os.getenv('HOST_IP', "linfed.ru")
 SSH_USER = 'cs'
-SSH_KEY_PATH = '../home/ssh_key'
+SSH_KEY = os.getenv('SSH_KEY')
 
 
 
@@ -27,18 +27,18 @@ def start_server():
 
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(SSH_HOST, username=SSH_USER, key_filename=SSH_KEY_PATH)
+        ssh.connect(SSH_HOST, username=SSH_USER, pkey=SSH_KEY)
 
         stdin, stdout, stderr = ssh.exec_command(f'cs2-server @prac{server_id} start')
         output = stdout.read().decode()
         error = stderr.read().decode()
 
-        clean_output = re.sub(r'\x1b\[[0-9;]*m', '', output)
-        clean_output = re.sub(r'\*+\s*|\n\s*', ' ', clean_output).strip()
-
         ssh.close()
+        app.logger.info(output)
+        app.logger.warning(error)
         return jsonify({"output": output, "error": error})
     except Exception as e:
+        app.logger.error(e)
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/server-stop', methods=['POST'])
@@ -53,7 +53,7 @@ def stop_server():
 
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(SSH_HOST, username=SSH_USER, key_filename=SSH_KEY_PATH)
+        ssh.connect(SSH_HOST, username=SSH_USER, pkey=SSH_KEY)
 
         stdin, stdout, stderr = ssh.exec_command(f"cs2-server @prac{server_id} stop")
         output = stdout.read().decode()
@@ -63,8 +63,11 @@ def stop_server():
         clean_output = re.sub(r'\*+\s*|\n\s*', ' ', clean_output).strip()
 
         ssh.close()
+        app.logger.info(output)
+        app.logger.warning(error)
         return jsonify({"output": clean_output, "error": error})
     except Exception as e:
+        app.logger.error(e)
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/say', methods=['POST'])
@@ -72,7 +75,7 @@ def say_mod():
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(SSH_HOST, username=SSH_USER, key_filename=SSH_KEY_PATH)
+        ssh.connect(SSH_HOST, username=SSH_USER, pkey=SSH_KEY)
 
         stdin, stdout, stderr = ssh.exec_command('cs2-server @prac3 exec say WORK!!!')
         output = stdout.read().decode()
