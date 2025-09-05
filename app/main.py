@@ -13,6 +13,8 @@ CORS(app)
 SSH_HOST = os.getenv('HOST_IP', "linfed.ru")
 SSH_USER = 'cs'
 SSH_PRIVATE_KEY = os.getenv('SSH_KEY')
+PRIVATE_KEY = StringIO(SSH_PRIVATE_KEY)
+PK = paramiko.Ed25519Key.from_private_key(PRIVATE_KEY)
 
 
 
@@ -29,7 +31,7 @@ def start_server():
 
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(SSH_HOST, username=SSH_USER, pkey=SSH_PRIVATE_KEY)
+        ssh.connect(SSH_HOST, username=SSH_USER, pkey=PK)
 
         stdin, stdout, stderr = ssh.exec_command(f'cs2-server @prac{server_id} start')
         output = stdout.read().decode()
