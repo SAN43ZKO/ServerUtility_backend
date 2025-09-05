@@ -12,10 +12,8 @@ CORS(app)
 
 SSH_HOST = os.getenv('HOST_IP', "linfed.ru")
 SSH_USER = 'cs'
-SSH_KEY = os.getenv('SSH_KEY')
-print(SSH_KEY)
-key_file_crate = open('ssh_key', "w")
-# key_file_crate.write(SSH_KEY)
+SSH_PRIVATE_KEY = os.getenv('SSH_KEY')
+
 
 
 
@@ -31,7 +29,7 @@ def start_server():
 
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(SSH_HOST, username=SSH_USER, key_filename="ssh_key")
+        ssh.connect(SSH_HOST, username=SSH_USER, pkey=SSH_PRIVATE_KEY)
 
         stdin, stdout, stderr = ssh.exec_command(f'cs2-server @prac{server_id} start')
         output = stdout.read().decode()
@@ -57,7 +55,7 @@ def stop_server():
 
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(SSH_HOST, username=SSH_USER, key_filename=KEY_FILE)
+        ssh.connect(SSH_HOST, username=SSH_USER, pkey=SSH_PRIVATE_KEY)
 
         stdin, stdout, stderr = ssh.exec_command(f"cs2-server @prac{server_id} stop")
         output = stdout.read().decode()
@@ -79,7 +77,7 @@ def say_mod():
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(SSH_HOST, username=SSH_USER, key_filename=KEY_FILE)
+        ssh.connect(SSH_HOST, username=SSH_USER, pkey=SSH_PRIVATE_KEY)
 
         stdin, stdout, stderr = ssh.exec_command('cs2-server @prac3 exec say WORK!!!')
         output = stdout.read().decode()
