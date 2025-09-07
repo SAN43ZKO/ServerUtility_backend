@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-import io
+import requests
 import paramiko
 import os
 import re
@@ -111,18 +111,34 @@ async def check_status():
         server_addres = (server_ip, server_port)
 
         info = await a2s.ainfo(server_addres)
+
         return jsonify({
             "status": "online",
             "players": str(info.player_count),
             "map": info.map_name,
-            "port": info.port
-        })
+            "port": info.port,
+            "server_version": str(info.version).replace(".", "")
+        }), 200
 
     except Exception as e:
         return jsonify({
             "status": "offline",
             "error": str(e)
         }), 200
+
+@app.route('/api/version', methods=['GET'])
+def check_version():
+    try:
+        key = os.getenv("STEAM_WEB_API_KEY")
+        params = {"key": key}
+        response = requests.get('https://api.steampowered.com/ICSGOServers_730/GetGameServersStatus/v1/', params=params)
+        if response.ok:
+            data = response.json()
+            return jsonify(str(data['result']['app']['version'])), 200
+    except Exception as e:
+        return jsonify({
+            "error": "Couldn't get version",
+        }), 523
 
 if __name__ == "__main__":
     app.run(host="localhost", port=5000)
