@@ -80,22 +80,6 @@ def stop_server():
         app.logger.error(e)
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/say', methods=['POST'])
-def say_mod():
-    try:
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(SSH_HOST, username=SSH_USER, key_filename="ssh_key")
-
-        stdin, stdout, stderr = ssh.exec_command('cs2-server @prac3 exec say WORK!!!')
-        output = stdout.read().decode()
-        error = stderr.read().decode()
-
-        ssh.close()
-        return jsonify({"output": output, "error": error})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
 @app.route('/api/status', methods=['POST'])
 async def check_status():
     try:
@@ -105,6 +89,16 @@ async def check_status():
         if not data or "serverIp" not in data or "serverPort" not in data:
             app.logger.warning("Missing serverIp or serverPort in request")
             return jsonify({"error": "No server ip or port"}), 400
+
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(SSH_HOST, username=SSH_USER, key_filename="ssh_key")
+
+        stdin, stdout, stderr = ssh.exec_command('grep -w "PatchVersion" msm.d/cs2/base/game/csgo/steam.inf')
+        output = stdout.read().decode()
+        ssh.close()
+
+        server_version = re.sub(r"\D", "", output)
 
         server_ip = data['serverIp']
         server_port = data['serverPort']
@@ -117,13 +111,14 @@ async def check_status():
             "players": str(info.player_count),
             "map": info.map_name,
             "port": info.port,
-            "server_version": str(info.version).replace(".", "")
+            "server_version": server_version
         }), 200
 
     except Exception as e:
         return jsonify({
             "status": "offline",
-            "error": str(e)
+            "error": str(e),
+            "server_version": server_version
         }), 200
 
 @app.route('/api/version', methods=['GET'])
