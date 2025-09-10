@@ -23,6 +23,16 @@ if SSH_PRIVATE_KEY is not None:
 else:
     print("No ssh_key")
 
+@app.route('/api/servers', methods=['GET'])
+def list_servers():
+    servers = [
+        {"id": 1, "name": "Practice 1", "ip": "linfed.ru", "port": 28011},
+        {"id": 2, "name": "Practice 2", "ip": "linfed.ru", "port": 28012},
+        {"id": 3, "name": "Practice 3", "ip": "linfed.ru", "port": 28013}
+    ]
+
+    return jsonify(servers)
+
 
 
 @app.route('/api/server-start', methods=['POST'])
